@@ -105,64 +105,34 @@ class Ball extends Shape {
     this.horizontalDirection = random(0, 1) ? 'right' : 'left';
     this.verticalDirection = random(0, 1) ? 'down' : 'up';
     this.collision = {};
+    // steps needed to crash into the boundaries
+    this.stepsUntilCollisionX = this.calculateStepsUntilCollisionX();
+    this.stepsUntilCollisionY = this.calculateStepsUntilCollisionY();
     this.id = idTotal++;
     // the ball is saved on its ID
     ballsWithID[this.id] = this;
     // we first update(), then draw(), which means if you do not draw in the beginning, you will skip 1 frame
     this.draw();
   }
-  
+
+  calculateStepsUntilCollisionX () {
+    return this.horizontalDirection === 'right'
+      ? Math.ceil((width - (this.x + this.size)) / this.velX)
+      : Math.ceil((this.x - this.size) / this.velX)
+    ;
+  }
+  calculateStepsUntilCollisionY () {
+    return this.verticalDirection === 'down'
+      ? Math.ceil((height - (this.y + this.size)) / this.velY)
+      : Math.ceil((this.y - this.size) / this.velY)
+    ;
+  }
+
   draw() {
     ctx.beginPath();
     ctx.fillStyle = this.color;
     ctx.arc(this.x, this.y, this.size, 0, 2 * Math.PI);
     ctx.fill();
-  }
-
-  update() {
-    // If it is updated, do not update it again
-    let xIsUpdated = false;
-    let yIsUpdated = false;
-
-    // should not exceed boundaries
-    if ((this.horizontalDirection === 'right') && (this.x + this.size + this.velX > width)) {
-      // go left
-      this.horizontalDirection = 'left';
-      this.x = width - this.size;
-      xIsUpdated = true;
-    } else if ((this.horizontalDirection === 'left') && (this.x - this.size - this.velX < 0)) {
-      // go right
-      this.horizontalDirection = 'right';
-      this.x = this.size;
-      xIsUpdated = true;
-    }
-    
-    if ((this.verticalDirection === 'down') && (this.y + this.size + this.velY > height)) {
-      // go up
-      this.verticalDirection = 'up';
-      this.y = height - this.size;
-      yIsUpdated = true;
-    } else if ((this.verticalDirection === 'up') && (this.y - this.size - this.velY < 0)) {
-      // go down
-      this.verticalDirection = 'down';
-      this.y = this.size;
-      yIsUpdated = true;
-    }
-    
-    // 4 different cases: (X && Y), (only X), (only Y), none
-    // If it's updated, there is no need to update the coordinate again.
-    // If it's not updated, update it according to the velocity.
-    if (xIsUpdated) {
-      if (yIsUpdated) {
-      } else {
-        this.updateVertical();
-      }
-    } else if (yIsUpdated) {
-      this.updateHorizontal();
-    } else {
-      this.updateHorizontal();
-      this.updateVertical();
-    }
   }
 
   drawAndUpdate() {
@@ -171,17 +141,72 @@ class Ball extends Shape {
     this.draw();
   }
 
+  update() {
+    if (this.stepsUntilCollisionX > 1) {
+      this.updateHorizontal();
+      this.stepsUntilCollisionX--;
+    } else if (this.stepsUntilCollisionX === 1) {
+      this.collideWithXBoundaries();
+      this.stepsUntilCollisionX--;
+    } else {
+      // equal to 0, or the unlikely case: less than 0 (for example: if the radius is greater than window width)
+      this.changeHorizontalDirection();
+      this.updateHorizontal();
+      this.stepsUntilCollisionX = this.calculateStepsUntilCollisionX();
+    }
+
+    if (this.stepsUntilCollisionY > 1) {
+      this.updateVertical();
+      this.stepsUntilCollisionY--;
+    } else if (this.stepsUntilCollisionY === 1) {
+      this.collideWithYBoundaries();
+      this.stepsUntilCollisionY--;
+    } else {
+      // equal to 0
+      this.changeVerticalDirection();
+      this.updateVertical();
+      this.stepsUntilCollisionY = this.calculateStepsUntilCollisionY();
+    }
+  }
+
   updateHorizontal() {
     this.horizontalDirection === 'right'
       ? this.x += this.velX
       : this.x -= this.velX
     ;
   }
-  
   updateVertical() {
     this.verticalDirection === 'down'
       ? this.y += this.velY
       : this.y -= this.velY
+    ;
+  }
+
+  collideWithXBoundaries() {
+    if (this.horizontalDirection === 'right') {
+      this.x = width - this.size;
+    } else {
+      this.x = this.size;
+    }
+  }
+  collideWithYBoundaries() {
+    if (this.verticalDirection === 'down') {
+      this.y = height - this.size;
+    } else {
+      this.y = this.size;
+    }
+  }
+
+  changeHorizontalDirection() {
+    this.horizontalDirection === 'right'
+      ? this.horizontalDirection = 'left'
+      : this.horizontalDirection = 'right'
+    ;
+  }
+  changeVerticalDirection() {
+    this.verticalDirection === 'down'
+      ? this.verticalDirection = 'up'
+      : this.verticalDirection = 'down'
     ;
   }
 
