@@ -13,7 +13,7 @@ const incrementByTenBtn = document.getElementById('increment-by-ten');
 const incrementByHundredBtn = document.getElementById('increment-by-hundred');
 // adding functionality to buttons
 const addTenFunc = addAnAmountOfBallsToTheGame.bind(null, 10);
-const addHundredFunc = addAnAmountOfBallsToTheGame.bind(null, 1000);
+const addHundredFunc = addAnAmountOfBallsToTheGame.bind(null, 100);
 incrementByTenBtn.addEventListener('click', addTenFunc);
 incrementByTenBtn.addEventListener('mousedown', holdToDoSomeFunction.bind(null, addTenFunc));
 incrementByHundredBtn.addEventListener('click', addHundredFunc);
@@ -31,7 +31,7 @@ decreaseEvilSizeBtn.addEventListener('mousedown', holdToDoSomeFunction.bind(null
 
 // event handler for mouse holding events
 function holdToDoSomeFunction (someFunction) {
-  const intervalID = setInterval(someFunction, 100);
+  const intervalID = setInterval(someFunction, 200);
   document.addEventListener('mouseup', clearInterval.bind(null, intervalID), { once: true });
 }
 
