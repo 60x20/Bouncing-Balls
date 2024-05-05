@@ -342,8 +342,8 @@ function createARandomBall() {
     // always drawn at least one ball width away from the edge of the canvas, to avoid drawing errors
     random(size, width - size),
     random(size, height - size),
-    random(1, 10),
-    random(1, 10),
+    random(0, 10),
+    random(0, 10),
     randomRGB(),
     size
   );
