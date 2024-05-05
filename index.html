@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <title>Bouncing balls</title>
+    <link rel="stylesheet" href="style.css">
+  </head>
+
+  <body>
+    <div id="instruments">
+      <div id="informative-instrument-container">
+        <p id="fps"></p>
+        <p id="counter"></p>
+      </div>
+      <div id="add-balls-container">
+        <button type="button" id="increment-by-ten">+10 balls</button>
+        <button type="button" id="increment-by-hundred">+100 balls</button>
+      </div>
+      <div id="increase-evil-size-container">
+        <button type="button" id="increase-evil-size">evil size * 2</button>
+        <button type="button" id="decrease-evil-size">evil size * 1/2</button>
+      </div>
+      <button type="button" id="toggle-collision-detection">Turn off collision detection</button>
+      <button type="button" id="toggle-game-state">Pause</button>
+    </div>
+    <canvas></canvas>
+
+    <script src="main.js"></script>
+  </body>
+</html>
