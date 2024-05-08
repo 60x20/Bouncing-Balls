@@ -106,8 +106,10 @@ class Ball extends Shape {
     this.verticalDirection = random(0, 1) ? 'down' : 'up';
     this.collision = {};
     // steps needed to crash into the boundaries
-    this.stepsUntilCollisionX = this.calculateStepsUntilCollisionX();
-    this.stepsUntilCollisionY = this.calculateStepsUntilCollisionY();
+    this.stepsUntilCollisionX = this.horizontalDirection === 'right' ? this.calculateStepsUntilCollisionRight() : this.calculateStepsUntilCollisionLeft();
+    this.stepsUntilCollisionY = this.verticalDirection === 'down' ? this.calculateStepsUntilCollisionDown() : this.calculateStepsUntilCollisionUp(); 
+    this.velXWithVector = this.horizontalDirection === 'right' ? velX : -velX;
+    this.velYWithVector = this.verticalDirection === 'down' ? velY : -velY; 
     this.id = idTotal++;
     // the ball is saved on its ID
     ballsWithID[this.id] = this;
@@ -115,17 +117,19 @@ class Ball extends Shape {
     this.draw();
   }
 
-  calculateStepsUntilCollisionX () {
-    return this.horizontalDirection === 'right'
-      ? Math.ceil((width - (this.x + this.size)) / this.velX)
-      : Math.ceil((this.x - this.size) / this.velX)
-    ;
+  // calculateStepsUntilCollisionHorizontal
+  calculateStepsUntilCollisionLeft () {
+    return Math.ceil((this.x - this.size) / this.velX);
   }
-  calculateStepsUntilCollisionY () {
-    return this.verticalDirection === 'down'
-      ? Math.ceil((height - (this.y + this.size)) / this.velY)
-      : Math.ceil((this.y - this.size) / this.velY)
-    ;
+  calculateStepsUntilCollisionRight () {
+    return Math.ceil((width - (this.x + this.size)) / this.velX);
+  }
+  // calculateStepsUntilCollisionVertical
+  calculateStepsUntilCollisionUp () {
+    return Math.ceil((this.y - this.size) / this.velY);
+  }
+  calculateStepsUntilCollisionDown () {
+    return Math.ceil((height - (this.y + this.size)) / this.velY);
   }
 
   draw() {
@@ -143,70 +147,62 @@ class Ball extends Shape {
 
   update() {
     if (this.stepsUntilCollisionX > 1) {
-      this.updateHorizontal();
+      this.x += this.velXWithVector;
       this.stepsUntilCollisionX--;
     } else if (this.stepsUntilCollisionX === 1) {
       this.collideWithXBoundaries();
       this.stepsUntilCollisionX--;
     } else {
       // equal to 0, or the unlikely case: less than 0 (for example: if the radius is greater than window width)
-      this.changeHorizontalDirection();
-      this.updateHorizontal();
-      this.stepsUntilCollisionX = this.calculateStepsUntilCollisionX();
+      if (this.horizontalDirection === 'right') {
+        // change direction
+        this.horizontalDirection = 'left';
+        this.velXWithVector *= -1;
+        this.x += this.velXWithVector;
+        this.stepsUntilCollisionX = this.calculateStepsUntilCollisionLeft();
+      } else {
+        // change direction
+        this.horizontalDirection = 'right';
+        this.velXWithVector *= -1;
+        this.x += this.velXWithVector;
+        this.stepsUntilCollisionX = this.calculateStepsUntilCollisionRight();
+      }
     }
 
     if (this.stepsUntilCollisionY > 1) {
-      this.updateVertical();
+      this.y += this.velYWithVector;
       this.stepsUntilCollisionY--;
     } else if (this.stepsUntilCollisionY === 1) {
       this.collideWithYBoundaries();
       this.stepsUntilCollisionY--;
     } else {
       // equal to 0
-      this.changeVerticalDirection();
-      this.updateVertical();
-      this.stepsUntilCollisionY = this.calculateStepsUntilCollisionY();
+      if (this.verticalDirection === 'down') {
+        // change direction
+        this.verticalDirection = 'up';
+        this.velYWithVector *= -1;
+        this.y += this.velYWithVector;
+        this.stepsUntilCollisionY = this.calculateStepsUntilCollisionUp();
+      } else {
+        // change direction
+        this.verticalDirection = 'down';
+        this.velYWithVector *= -1;
+        this.y += this.velYWithVector;
+        this.stepsUntilCollisionY = this.calculateStepsUntilCollisionDown();
+      }
     }
-  }
-
-  updateHorizontal() {
-    this.horizontalDirection === 'right'
-      ? this.x += this.velX
-      : this.x -= this.velX
-    ;
-  }
-  updateVertical() {
-    this.verticalDirection === 'down'
-      ? this.y += this.velY
-      : this.y -= this.velY
-    ;
   }
 
   collideWithXBoundaries() {
-    if (this.horizontalDirection === 'right') {
-      this.x = width - this.size;
-    } else {
-      this.x = this.size;
-    }
-  }
-  collideWithYBoundaries() {
-    if (this.verticalDirection === 'down') {
-      this.y = height - this.size;
-    } else {
-      this.y = this.size;
-    }
-  }
-
-  changeHorizontalDirection() {
     this.horizontalDirection === 'right'
-      ? this.horizontalDirection = 'left'
-      : this.horizontalDirection = 'right'
+      ? this.x = width - this.size
+      : this.x = this.size
     ;
   }
-  changeVerticalDirection() {
+  collideWithYBoundaries() {
     this.verticalDirection === 'down'
-      ? this.verticalDirection = 'up'
-      : this.verticalDirection = 'down'
+      ? this.y = height - this.size
+      : this.y = this.size
     ;
   }
 
