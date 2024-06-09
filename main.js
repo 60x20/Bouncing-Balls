@@ -1,6 +1,8 @@
+'use strict';
+
 // setup canvas and elements
-const canvas = document.querySelector("canvas");
-const ctx = canvas.getContext("2d");
+const canvas = document.querySelector('canvas');
+const ctx = canvas.getContext('2d');
 // Math.floor is used so that canvas is never greater than body, eliminating possible scrollbars
 const bodySize = document.body.getBoundingClientRect();
 let width = canvas.width = Math.floor(bodySize.width);
@@ -12,27 +14,32 @@ counter.innerText = 0;
 const incrementByTenBtn = document.getElementById('increment-by-ten');
 const incrementByHundredBtn = document.getElementById('increment-by-hundred');
 // adding functionality to buttons
-const addTenFunc = addAnAmountOfBallsToTheGame.bind(null, 10);
-const addHundredFunc = addAnAmountOfBallsToTheGame.bind(null, 100);
+const addTenFunc = addAnAmountOfBallsToTheGame.bind(globalThis, 10);
+const addHundredFunc = addAnAmountOfBallsToTheGame.bind(globalThis, 100);
 incrementByTenBtn.addEventListener('click', addTenFunc);
-incrementByTenBtn.addEventListener('mousedown', holdToDoSomeFunction.bind(null, addTenFunc));
+incrementByTenBtn.addEventListener('mousedown', holdToDoSomeFunction.bind(globalThis, addTenFunc, 'mouseup'));
+incrementByTenBtn.addEventListener('touchstart', holdToDoSomeFunction.bind(globalThis, addTenFunc, 'touchend'));
 incrementByHundredBtn.addEventListener('click', addHundredFunc);
-incrementByHundredBtn.addEventListener('mousedown', holdToDoSomeFunction.bind(null, addHundredFunc));
+incrementByHundredBtn.addEventListener('mousedown', holdToDoSomeFunction.bind(globalThis, addHundredFunc, 'mouseup'));
+incrementByHundredBtn.addEventListener('touchstart', holdToDoSomeFunction.bind(globalThis, addHundredFunc, 'touchend'));
 
 const increaseEvilSizeBtn = document.getElementById('increase-evil-size');
 const decreaseEvilSizeBtn = document.getElementById('decrease-evil-size');
 // adding functionality to buttons
-const multiplyByTwoFunc = multiplyEvilSize.bind(null, 2);
-const multiplyByAHalfFunc = multiplyEvilSize.bind(null, 1 / 2);
+const multiplyByTwoFunc = multiplyEvilSize.bind(globalThis, 2);
+const multiplyByAHalfFunc = multiplyEvilSize.bind(globalThis, 1 / 2);
 increaseEvilSizeBtn.addEventListener('click', multiplyByTwoFunc);
-increaseEvilSizeBtn.addEventListener('mousedown', holdToDoSomeFunction.bind(null, multiplyByTwoFunc));
+increaseEvilSizeBtn.addEventListener('mousedown', holdToDoSomeFunction.bind(globalThis, multiplyByTwoFunc, 'mouseup'));
+increaseEvilSizeBtn.addEventListener('touchstart', holdToDoSomeFunction.bind(globalThis, multiplyByTwoFunc, 'touchend'));
 decreaseEvilSizeBtn.addEventListener('click', multiplyByAHalfFunc);
-decreaseEvilSizeBtn.addEventListener('mousedown', holdToDoSomeFunction.bind(null, multiplyByAHalfFunc));
+decreaseEvilSizeBtn.addEventListener('mousedown', holdToDoSomeFunction.bind(globalThis, multiplyByAHalfFunc, 'mouseup'));
+decreaseEvilSizeBtn.addEventListener('touchstart', holdToDoSomeFunction.bind(globalThis, multiplyByAHalfFunc, 'touchend'));
 
 // event handler for mouse holding events
-function holdToDoSomeFunction (someFunction) {
+function holdToDoSomeFunction (someFunction, timeToStop) {
   const intervalID = setInterval(someFunction, 200);
-  document.addEventListener('mouseup', clearInterval.bind(null, intervalID), { once: true });
+  // timeToStop is an event name like 'mouseup' and 'touchend'
+  document.addEventListener(timeToStop, clearInterval.bind(globalThis, intervalID), { once: true });
 }
 
 const toggleCollisionDetectionBtn = document.getElementById('toggle-collision-detection');
@@ -42,10 +49,10 @@ let allowCollisionDetection = true;
 function toggleCollisionDetection() {
   allowCollisionDetection = !allowCollisionDetection;
   if (allowCollisionDetection) {
-    toggleCollisionDetectionBtn.innerText = "Turn off collision detection"
+    toggleCollisionDetectionBtn.innerText = 'Turn off collision detection';
     return;
   }
-  toggleCollisionDetectionBtn.innerText = "Turn on collision detection"
+  toggleCollisionDetectionBtn.innerText = 'Turn on collision detection';
   // reset collision logs
   const ballsLength = balls.length;
   for (let i = 0; i < ballsLength; i++) {
@@ -62,16 +69,32 @@ let animationRequestID;
 function toggleGameState() {
   gameState = !gameState;
   if (gameState) {
-    toggleGameStateBtn.innerText = "Pause";
+    toggleGameStateBtn.innerText = 'Pause';
     animationRequestID = requestAnimationFrame(blackenThenDrawThenSchedule);
     return;
   }
-  toggleGameStateBtn.innerText = "Continue";
+  toggleGameStateBtn.innerText = 'Continue';
   cancelAnimationFrame(animationRequestID);
 }
 
+const toggleInstrumentsBtn = document.getElementById('toggle-instruments');
+const instrumentsWrapper = document.getElementById('instruments');
+// adding functionality to the button
+toggleInstrumentsBtn.addEventListener('click', toggleInstruments);
+let instrumentsState = true;
+function toggleInstruments() {
+  instrumentsState = !instrumentsState;
+  if (instrumentsState) {
+    toggleInstrumentsBtn.innerText = 'Hide';
+    instrumentsWrapper.classList.remove('displayNoneChildren');
+    return;
+  }
+  toggleInstrumentsBtn.innerText = 'Show';
+  instrumentsWrapper.classList.add('displayNoneChildren');
+}
+
 const fpsElement = document.getElementById('fps');
-let totalFrame = timeElapsed = 0;
+let totalFrame = 0, timeElapsed = 0;
 
 // function to generate random number
 function random(min, max) {
@@ -433,9 +456,9 @@ let totalOverlays = 0;
 function blackenThenDrawThenSchedule() {
   const start = performance.now();
   // partially remove the trail
-  ctx.fillStyle = "rgb(0 0 0 / 33%)";
+  ctx.fillStyle = 'rgb(0 0 0 / 33%)';
   if (++totalOverlays === 40) {
-    ctx.fillStyle = "rgb(0 0 0 / 50%)";
+    ctx.fillStyle = 'rgb(0 0 0 / 50%)';
     totalOverlays = 0;
   }
   ctx.fillRect(0, 0, width, height);

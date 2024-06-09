@@ -65,3 +65,8 @@ canvas {
   top: 0;
   left: 0;
 }
+
+/* hide everything other than the button to hide everything */
+.displayNoneChildren *:not(#toggle-instruments) {
+  display: none !important;
+}
