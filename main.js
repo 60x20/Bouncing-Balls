@@ -11,6 +11,8 @@ let height = canvas.height = Math.floor(bodySize.height);
 const counter = document.getElementById('counter');
 counter.innerText = 0;
 
+const instrumentsWrapper = document.getElementById('instruments');
+
 const incrementByTenBtn = document.getElementById('increment-by-ten');
 const incrementByHundredBtn = document.getElementById('increment-by-hundred');
 // adding functionality to buttons
@@ -78,10 +80,9 @@ function toggleGameState() {
 }
 
 const toggleInstrumentsBtn = document.getElementById('toggle-instruments');
-const instrumentsWrapper = document.getElementById('instruments');
 // adding functionality to the button
 toggleInstrumentsBtn.addEventListener('click', toggleInstruments);
-let instrumentsState = true;
+let instrumentsState = false;
 function toggleInstruments() {
   instrumentsState = !instrumentsState;
   if (instrumentsState) {
@@ -420,26 +421,9 @@ let directionsForEvil = {
   arrowdown: false,
   s: false,
 };
-function directionsToGoForEvil (e) {
-  // if undefined, it is not a possible key
-  // if true, changing true to true serves no purpose
-  const keyTriggered = e.key.toLowerCase();
-  if (directionsForEvil[keyTriggered] === false) {
-    directionsForEvil[keyTriggered] = true;
-  }
-}
-function directionsToAbandonForEvil (e) {
-  // if undefined, it is not a possible key
-  // if false, changing false to false serves no purpose
-  const keyTriggered = e.key.toLowerCase();
-  if (directionsForEvil[keyTriggered] === true) {
-    directionsForEvil[keyTriggered] = false;
-  }
-}
-document.addEventListener('keydown', directionsToGoForEvil);
-document.addEventListener('keyup', directionsToAbandonForEvil);
-window.addEventListener('blur', () => {
+function resetDirections() {
   // reset the directions if focus is lost (in which case keyUp might not be triggered)
+  // or mouseup or touchend is triggered
   directionsForEvil = {
     arrowleft: false,
     a: false,
@@ -450,7 +434,133 @@ window.addEventListener('blur', () => {
     arrowdown: false,
     s: false,
   };
+}
+function directionsToGoForEvilUsingKeys (e) {
+  // if undefined, it is not a possible key
+  // if true, changing true to true serves no purpose
+  const keyTriggered = e.key.toLowerCase();
+  if (directionsForEvil[keyTriggered] === false) {
+    directionsForEvil[keyTriggered] = true;
+  }
+}
+function directionsToAbandonForEvilUsingKeys (e) {
+  // if undefined, it is not a possible key
+  // if false, changing false to false serves no purpose
+  const keyTriggered = e.key.toLowerCase();
+  if (directionsForEvil[keyTriggered] === true) {
+    directionsForEvil[keyTriggered] = false;
+  }
+}
+function directionsToGoForEvilUsingMouse (mouseEvent) {
+  // only pageX and pageY properties of the mouseEvent are used
+  // 'page' is used instead of 'client' and 'offset' properties
+  // because they include scrolling and also are compatible with mobile devices
+
+  // horizontal
+  if (mouseEvent.pageX > evil.x + evil.size) {
+    // go right
+    directionsForEvil.arrowleft = false;
+    directionsForEvil.arrowright = true;
+  } else if (mouseEvent.pageX < evil.x - evil.size) {
+    // go left
+    directionsForEvil.arrowleft = true;
+    directionsForEvil.arrowright = false;
+  } else {
+    // horizontal stop since they are nearby
+    directionsForEvil.arrowleft = false;
+    directionsForEvil.arrowright = false;
+  }
+
+  // vertical
+  if (mouseEvent.pageY > evil.y + evil.size) {
+    // go down
+    directionsForEvil.arrowup = false;
+    directionsForEvil.arrowdown = true;
+  } else if (mouseEvent.pageY < evil.y - evil.size) {
+    // go up
+    directionsForEvil.arrowup = true;
+    directionsForEvil.arrowdown = false;
+  } else {
+    // vertical stop since they are nearby
+    directionsForEvil.arrowup = false;
+    directionsForEvil.arrowdown = false;
+  }
+}
+
+// set directions using keys
+document.addEventListener('keydown', directionsToGoForEvilUsingKeys);
+document.addEventListener('keyup', directionsToAbandonForEvilUsingKeys);
+
+// set directions using mouse
+document.addEventListener('mousedown', (e) => {
+  // if event originates from the instruments wrapper, then ignore it (bubbling)
+  if (!instrumentsWrapper.contains(e.target)) {
+    const currentCoordinates = {pageX: e.pageX, pageY: e.pageY};
+    document.addEventListener('mousemove', setCurrentCoordinates);
+    const changeDirectionsFunc = directionsToGoForEvilUsingMouse.bind(globalThis, currentCoordinates);
+    let animationRequestID = requestAnimationFrame(recursivelyChangeDirectionsFunc);
+    
+    // interval version of requestAnimationFrame
+    function recursivelyChangeDirectionsFunc () {
+      changeDirectionsFunc();
+      animationRequestID = requestAnimationFrame(recursivelyChangeDirectionsFunc);
+    }
+
+    function setCurrentCoordinates(coordinatesObj) {
+      currentCoordinates.pageX = coordinatesObj.pageX;
+      currentCoordinates.pageY = coordinatesObj.pageY;
+    }
+
+    document.addEventListener('mouseup', (e) => {
+      // timeout is to make clicks have an effect
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          document.removeEventListener('mousemove', setCurrentCoordinates);
+          resetDirections();
+          cancelAnimationFrame(animationRequestID);
+        });
+      });
+    }, { once: true });
+  }
 });
+
+// set directions touching the screen
+document.addEventListener('touchstart', (e) => {
+  // if event originates from the instruments wrapper, then ignore it (bubbling)
+  if (!instrumentsWrapper.contains(e.target)) {
+    const touch = e.touches[0];
+    const currentCoordinates = {pageX: touch.pageX, pageY: touch.pageY};
+    document.addEventListener('touchmove', (e) => {
+      setCurrentCoordinates(e.touches[0]);
+    });
+    const changeDirectionsFunc = directionsToGoForEvilUsingMouse.bind(globalThis, currentCoordinates);
+    let animationRequestID = requestAnimationFrame(recursivelyChangeDirectionsFunc);
+
+    // interval version of requestAnimationFrame
+    function recursivelyChangeDirectionsFunc () {
+      changeDirectionsFunc();
+      animationRequestID = requestAnimationFrame(recursivelyChangeDirectionsFunc);
+    }
+
+    function setCurrentCoordinates(coordinatesObj) {
+      currentCoordinates.pageX = coordinatesObj.pageX;
+      currentCoordinates.pageY = coordinatesObj.pageY;
+    }
+
+    document.addEventListener('touchend', () => {
+      // timeout is to make clicks have an effect
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          document.removeEventListener('touchmove', setCurrentCoordinates);
+          resetDirections();
+          cancelAnimationFrame(animationRequestID);
+        });
+      });
+    }, { once: true });
+  }
+});
+
+window.addEventListener('blur', resetDirections);
 
 let totalOverlays = 0;
 function blackenThenDrawThenSchedule() {

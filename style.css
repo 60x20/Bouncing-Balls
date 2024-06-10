@@ -9,6 +9,11 @@ html {
   background-color: rgb(0, 0, 0);
 }
 
+/* disabling pull to refresh on mobile devices */
+html, body, canvas {
+  overscroll-behavior: none;
+}
+
 * {
   user-select: none;
 }
