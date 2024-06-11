@@ -395,12 +395,13 @@ function createARandomBall() {
 }
 function createARandomEvilCircle() {
   const size = random(20, 30);
+  const vel = random(7, 14);
   return new EvilCircle(
     // always drawn at least one ball width away from the edge of the canvas, to avoid drawing errors
     random(size, width - size),
     random(size, height - size),
-    random(7, 14),
-    random(7, 14),
+    vel,
+    vel,
     'red',
     size
   );
@@ -491,11 +492,18 @@ function directionsToGoForEvilUsingMouse (mouseEvent) {
 document.addEventListener('keydown', directionsToGoForEvilUsingKeys);
 document.addEventListener('keyup', directionsToAbandonForEvilUsingKeys);
 
+function setCoordinates(currentCoordinates, coordinatesObj) {
+  // coordinates obj is a MouseEvent obj, or a similar object with pageX and pageY properties
+  // currentCoordinates should be bound so that coordinatesObj is the first parameter
+  currentCoordinates.pageX = coordinatesObj.pageX;
+  currentCoordinates.pageY = coordinatesObj.pageY;
+}
 // set directions using mouse
 document.addEventListener('mousedown', (e) => {
   // if event originates from the instruments wrapper, then ignore it (bubbling)
   if (!instrumentsWrapper.contains(e.target)) {
     const currentCoordinates = {pageX: e.pageX, pageY: e.pageY};
+    const setCurrentCoordinates = setCoordinates.bind(globalThis, currentCoordinates);
     document.addEventListener('mousemove', setCurrentCoordinates);
     const changeDirectionsFunc = directionsToGoForEvilUsingMouse.bind(globalThis, currentCoordinates);
     let animationRequestID = requestAnimationFrame(recursivelyChangeDirectionsFunc);
@@ -504,11 +512,6 @@ document.addEventListener('mousedown', (e) => {
     function recursivelyChangeDirectionsFunc () {
       changeDirectionsFunc();
       animationRequestID = requestAnimationFrame(recursivelyChangeDirectionsFunc);
-    }
-
-    function setCurrentCoordinates(coordinatesObj) {
-      currentCoordinates.pageX = coordinatesObj.pageX;
-      currentCoordinates.pageY = coordinatesObj.pageY;
     }
 
     document.addEventListener('mouseup', (e) => {
@@ -530,6 +533,7 @@ document.addEventListener('touchstart', (e) => {
   if (!instrumentsWrapper.contains(e.target)) {
     const touch = e.touches[0];
     const currentCoordinates = {pageX: touch.pageX, pageY: touch.pageY};
+    const setCurrentCoordinates = setCoordinates.bind(globalThis, currentCoordinates);
     document.addEventListener('touchmove', (e) => {
       setCurrentCoordinates(e.touches[0]);
     });
@@ -540,11 +544,6 @@ document.addEventListener('touchstart', (e) => {
     function recursivelyChangeDirectionsFunc () {
       changeDirectionsFunc();
       animationRequestID = requestAnimationFrame(recursivelyChangeDirectionsFunc);
-    }
-
-    function setCurrentCoordinates(coordinatesObj) {
-      currentCoordinates.pageX = coordinatesObj.pageX;
-      currentCoordinates.pageY = coordinatesObj.pageY;
     }
 
     document.addEventListener('touchend', () => {
