@@ -2,11 +2,42 @@
 
 // setup canvas and elements
 const canvas = document.querySelector('canvas');
-const ctx = canvas.getContext('2d');
+const ctx = canvas.getContext("2d", { willReadFrequently: true });
+
+// The size of body is preferred over that of window because it does not round the size
+// Rounding the size up, and giving this size to the canvas will result in scrollbars
 // Math.floor is used so that canvas is never greater than body, eliminating possible scrollbars
 const bodySize = document.body.getBoundingClientRect();
 let width = canvas.width = Math.floor(bodySize.width);
 let height = canvas.height = Math.floor(bodySize.height);
+
+// rotating the canvas when orientation changes
+screen.orientation.addEventListener('change', () => {
+  // canvas is saved and applied since changing the width and height of the canvas resets the canvas
+  const canvasData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+
+  // 'resize' event is listened for because:
+  // When you rotate your device, body adapts to the change thanks to CSS, but canvas does not.
+  // This results in an overflowing wide canvas, and the window tries to contain it, thus a bigger window.
+  // So, by equalizing canvas size with body size, we're eliminating a wide canvas, thus an over-sized window.
+
+  // After the change event occurs, resize event occurs once or twice
+  // If it occurs once: Window just normally rotates
+  // If it occurs twice: One occasion in which window contains the wide canvas, and then another occasion in which canvas is ignored
+  // In either case, overflowing canvas is ignored
+  window.addEventListener('resize', () => {
+    rotateTheCanvas(canvasData);
+    window.addEventListener('resize', () => {
+      rotateTheCanvas(canvasData);
+    }, { once: true });
+  }, { once: true });
+});
+function rotateTheCanvas(canvasData) {
+  const bodySize = document.body.getBoundingClientRect();
+  width = canvas.width = Math.floor(bodySize.width);
+  height = canvas.height = Math.floor(bodySize.height);
+  ctx.putImageData(canvasData, 0, 0);
+}
 
 const counter = document.getElementById('counter');
 counter.innerText = 0;
@@ -456,6 +487,7 @@ function directionsToGoForEvilUsingMouse (mouseEvent) {
   // only pageX and pageY properties of the mouseEvent are used
   // 'page' is used instead of 'client' and 'offset' properties
   // because they include scrolling and also are compatible with mobile devices
+  // it gives the offset of canvas because canvas starts at (0, 0)
 
   // horizontal
   if (mouseEvent.pageX > evil.x + evil.size) {
