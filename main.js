@@ -16,7 +16,7 @@ screen.orientation.addEventListener('change', () => {
   // canvas is saved and applied since changing the width and height of the canvas resets the canvas
   const canvasData = ctx.getImageData(0, 0, canvas.width, canvas.height);
 
-  // 'resize' event is listened for because:
+  // 'resize' event is listened to because:
   // When you rotate your device, body adapts to the change thanks to CSS, but canvas does not.
   // This results in an overflowing wide canvas, and the window tries to contain it, thus a bigger window.
   // So, by equalizing canvas size with body size, we're eliminating a wide canvas, thus an over-sized window.
