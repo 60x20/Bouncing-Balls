@@ -333,6 +333,25 @@ class EvilCircle extends Shape {
     ctx.strokeStyle = 'white';
     ctx.arc(this.x, this.y, this.size, 0, 2 * Math.PI);
     ctx.stroke();
+    /*
+    // outer rectangle
+    ctx.beginPath();
+    ctx.strokeStyle = 'white';
+    ctx.rect(this.x - this.size, this.y - this.size, 2 * this.size, 2 * this.size);
+    ctx.stroke();
+    // x axis
+    ctx.beginPath();
+    ctx.strokeStyle = 'black';
+    ctx.moveTo(this.x - this.size, this.y);
+    ctx.lineTo(this.x + this.size, this.y);
+    ctx.stroke();
+    // y axis
+    ctx.beginPath();
+    ctx.strokeStyle = 'black';
+    ctx.moveTo(this.x, this.y - this.size);
+    ctx.lineTo(this.x, this.y + this.size);
+    ctx.stroke();
+    */
   }
 
   goLeft() {
