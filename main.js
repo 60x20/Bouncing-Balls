@@ -554,34 +554,70 @@ function directionsToGoForEvilUsingMouse (mouseEvent) {
   // because they include scrolling and also are compatible with mobile devices
   // it gives the offset of canvas because canvas starts at (0, 0)
 
+  // Whether mouse is inside the X and Y axes of evilCircle
+  let withinHorizontalBoundaries = false;
+  let withinVerticalBoundaries = false;
+
   // horizontal
   if (mouseEvent.pageX > evil.x + evil.size) {
-    // go right
-    directionsForEvil.arrowleft = false;
-    directionsForEvil.arrowright = true;
+    evil.goRight();
   } else if (mouseEvent.pageX < evil.x - evil.size) {
-    // go left
-    directionsForEvil.arrowleft = true;
-    directionsForEvil.arrowright = false;
+    evil.goLeft();
   } else {
-    // horizontal stop since they are nearby
-    directionsForEvil.arrowleft = false;
-    directionsForEvil.arrowright = false;
+    withinHorizontalBoundaries = true;
   }
 
   // vertical
   if (mouseEvent.pageY > evil.y + evil.size) {
-    // go down
-    directionsForEvil.arrowup = false;
-    directionsForEvil.arrowdown = true;
+    evil.goDown();
   } else if (mouseEvent.pageY < evil.y - evil.size) {
-    // go up
-    directionsForEvil.arrowup = true;
-    directionsForEvil.arrowdown = false;
+    evil.goUp();
   } else {
-    // vertical stop since they are nearby
-    directionsForEvil.arrowup = false;
-    directionsForEvil.arrowdown = false;
+    withinVerticalBoundaries = true;
+  }
+
+  // if outside boundaries, it's already dealt with
+  if (withinHorizontalBoundaries) {
+    if (withinVerticalBoundaries) {
+      // within both boundaries
+      approachMouseIfOutsideCircle();
+    } else {
+      // only withinHorizontalBoundaries, meaning horizontal stop
+      evil.stopHorizontally();
+    }
+  } else if (withinVerticalBoundaries) {
+    // only withinVerticalBoundaries, meaning vertical stop
+    evil.stopVertically();
+  }
+
+  function approachMouseIfOutsideCircle() {
+    const differenceX = mouseEvent.pageX - evil.x;
+    const differenceY = mouseEvent.pageY - evil.y;
+    const lengthOfHypotenuse = Math.sqrt(differenceX ** 2 + differenceY ** 2);
+    // if the hypotenuse is bigger than the radius, it's outside the circle, otherwise inside it
+    // case: outside the circle
+    if (lengthOfHypotenuse > evil.size) {
+      // Since we are within the boundaries, if mouseEvent.pageY === evil.y, this means we're on the X axis
+      // There is no point on the X axis that radius does not reach
+      // So it is not a possible case
+      const downTheCenter = mouseEvent.pageY > evil.y;
+      const leftOfTheCenter = mouseEvent.pageX < evil.x;
+      if (leftOfTheCenter) {
+        evil.goLeft()
+      } else {
+        evil.goRight()
+      }
+
+      if (downTheCenter) {
+        evil.goDown()
+      } else {
+        evil.goUp();
+      }
+    } else {
+      // case: inside the circle, don't move
+      evil.stopHorizontally();
+      evil.stopVertically();
+    }
   }
 }
 
