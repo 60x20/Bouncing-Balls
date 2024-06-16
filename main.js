@@ -313,10 +313,12 @@ class EvilCircle extends Shape {
   constructor(x, y, velX, velY, color, size) {
     super(x, y, velX, velY, color, size);
     // we first update(), then draw(), which means if you do not draw in the beginning, you will skip 1 frame
-    this.directionRight = directionsForEvil.arrowright || directionsForEvil.d;
-    this.directionLeft = directionsForEvil.arrowleft || directionsForEvil.a;
-    this.directionDown = directionsForEvil.arrowdown || directionsForEvil.s;
-    this.directionUp = directionsForEvil.arrowup || directionsForEvil.w;
+    // reference to the global directionsForEvil
+    this.directionsForEvil = directionsForEvil;
+    this.directionRight = this.directionsForEvil.arrowright || this.directionsForEvil.d;
+    this.directionLeft = this.directionsForEvil.arrowleft || this.directionsForEvil.a;
+    this.directionDown = this.directionsForEvil.arrowdown || this.directionsForEvil.s;
+    this.directionUp = this.directionsForEvil.arrowup || this.directionsForEvil.w;
     this.drawEvil();
   }
 
@@ -335,10 +337,10 @@ class EvilCircle extends Shape {
 
   updateEvil() {
     // current directions are saved to the corresponding object properties
-    this.directionRight = directionsForEvil.arrowright || directionsForEvil.d;
-    this.directionLeft = directionsForEvil.arrowleft || directionsForEvil.a;
-    this.directionDown = directionsForEvil.arrowdown || directionsForEvil.s;
-    this.directionUp = directionsForEvil.arrowup || directionsForEvil.w;
+    this.directionRight = this.directionsForEvil.arrowright || this.directionsForEvil.d;
+    this.directionLeft = this.directionsForEvil.arrowleft || this.directionsForEvil.a;
+    this.directionDown = this.directionsForEvil.arrowdown || this.directionsForEvil.s;
+    this.directionUp = this.directionsForEvil.arrowup || this.directionsForEvil.w;
 
     // If it is updated, do not update it again
     let xIsUpdated = false;
@@ -461,6 +463,7 @@ function multiplyEvilSize(num) {
   evil.size = (evil.size * num) || 1;
 }
 
+// this object is referenced by 'evil', so when this is reassigned evil.directionsForEvil should also be reassigned
 let directionsForEvil = {
   arrowleft: false,
   a: false,
@@ -474,7 +477,7 @@ let directionsForEvil = {
 function resetDirections() {
   // reset the directions if focus is lost (in which case keyUp might not be triggered)
   // or mouseup or touchend is triggered
-  directionsForEvil = {
+  evil.directionsForEvil = directionsForEvil = {
     arrowleft: false,
     a: false,
     arrowup: false, 
