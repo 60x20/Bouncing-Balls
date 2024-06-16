@@ -335,6 +335,31 @@ class EvilCircle extends Shape {
     ctx.stroke();
   }
 
+  goLeft() {
+    this.directionsForEvil.arrowleft = true;
+    this.directionsForEvil.arrowright = false;
+  }
+  goRight() {
+    this.directionsForEvil.arrowleft = false;
+    this.directionsForEvil.arrowright = true;
+  }
+  goDown() {
+    this.directionsForEvil.arrowdown = true;
+    this.directionsForEvil.arrowup = false;
+  }
+  goUp() {
+    this.directionsForEvil.arrowdown = false;
+    this.directionsForEvil.arrowup = true;
+  }
+  stopHorizontally() {
+    this.directionsForEvil.arrowleft = false;
+    this.directionsForEvil.arrowright = false;
+  }
+  stopVertically() {
+    this.directionsForEvil.arrowdown = false;
+    this.directionsForEvil.arrowup = false;
+  }
+
   updateEvil() {
     // current directions are saved to the corresponding object properties
     this.directionRight = this.directionsForEvil.arrowright || this.directionsForEvil.d;
