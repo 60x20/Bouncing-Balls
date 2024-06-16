@@ -111,18 +111,36 @@ function toggleGameState() {
 }
 
 const toggleInstrumentsBtn = document.getElementById('toggle-instruments');
+// elements that will be hidden eventually
+const doNotHideList = document.querySelectorAll('.do-not-hide');
 // adding functionality to the button
 toggleInstrumentsBtn.addEventListener('click', toggleInstruments);
-let instrumentsState = false;
+let instrumentsState = 1;
 function toggleInstruments() {
-  instrumentsState = !instrumentsState;
-  if (instrumentsState) {
-    toggleInstrumentsBtn.innerText = 'Hide';
-    instrumentsWrapper.classList.remove('displayNoneChildren');
-    return;
+  switch (++instrumentsState) {
+    case 1:
+      // 1: Show partially
+      toggleInstrumentsBtn.innerText = 'More';
+      for (const element of doNotHideList) {
+        element.classList.add('do-not-hide');
+      }
+      break;
+    case 2:
+      // 2: Show All
+      toggleInstrumentsBtn.innerText = 'Hide';
+      instrumentsWrapper.classList.remove('displayNoneChildren');
+      break;
+    case 3:
+      // 3: Hide All
+      toggleInstrumentsBtn.innerText = 'Show';
+      instrumentsWrapper.classList.add('displayNoneChildren');
+      for (const element of doNotHideList) {
+        element.classList.remove('do-not-hide');
+      }
+      // break is not used so that default is executed
+    default:
+      instrumentsState = 0;
   }
-  toggleInstrumentsBtn.innerText = 'Show';
-  instrumentsWrapper.classList.add('displayNoneChildren');
 }
 
 const fpsElement = document.getElementById('fps');

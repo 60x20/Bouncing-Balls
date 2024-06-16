@@ -23,7 +23,6 @@ html, body, canvas {
   position: absolute;
   top: .5rem;
   left: .5rem;
-  /* background-color: red; */
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
@@ -72,6 +71,6 @@ canvas {
 }
 
 /* hide everything other than the button to hide everything */
-.displayNoneChildren *:not(#toggle-instruments) {
+.displayNoneChildren > :not(#toggle-instruments):not(.do-not-hide) {
   display: none !important;
 }
