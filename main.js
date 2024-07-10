@@ -51,10 +51,11 @@ const addTenFunc = addAnAmountOfBallsToTheGame.bind(globalThis, 10);
 const addHundredFunc = addAnAmountOfBallsToTheGame.bind(globalThis, 100);
 incrementByTenBtn.addEventListener('click', addTenFunc);
 incrementByTenBtn.addEventListener('mousedown', holdToDoSomeFunction.bind(globalThis, addTenFunc, 'mouseup'));
-incrementByTenBtn.addEventListener('touchstart', holdToDoSomeFunction.bind(globalThis, addTenFunc, 'touchend'));
+// { passive: true} option is added to 'touchstart' event listeners to allow the browser to optimize scrolling
+incrementByTenBtn.addEventListener('touchstart', holdToDoSomeFunction.bind(globalThis, addTenFunc, 'touchend'), { passive: true});
 incrementByHundredBtn.addEventListener('click', addHundredFunc);
 incrementByHundredBtn.addEventListener('mousedown', holdToDoSomeFunction.bind(globalThis, addHundredFunc, 'mouseup'));
-incrementByHundredBtn.addEventListener('touchstart', holdToDoSomeFunction.bind(globalThis, addHundredFunc, 'touchend'));
+incrementByHundredBtn.addEventListener('touchstart', holdToDoSomeFunction.bind(globalThis, addHundredFunc, 'touchend'), { passive: true});
 
 const increaseEvilSizeBtn = document.getElementById('increase-evil-size');
 const decreaseEvilSizeBtn = document.getElementById('decrease-evil-size');
@@ -63,10 +64,10 @@ const multiplyByTwoFunc = multiplyEvilSize.bind(globalThis, 2);
 const multiplyByAHalfFunc = multiplyEvilSize.bind(globalThis, 1 / 2);
 increaseEvilSizeBtn.addEventListener('click', multiplyByTwoFunc);
 increaseEvilSizeBtn.addEventListener('mousedown', holdToDoSomeFunction.bind(globalThis, multiplyByTwoFunc, 'mouseup'));
-increaseEvilSizeBtn.addEventListener('touchstart', holdToDoSomeFunction.bind(globalThis, multiplyByTwoFunc, 'touchend'));
+increaseEvilSizeBtn.addEventListener('touchstart', holdToDoSomeFunction.bind(globalThis, multiplyByTwoFunc, 'touchend'), { passive: true});
 decreaseEvilSizeBtn.addEventListener('click', multiplyByAHalfFunc);
 decreaseEvilSizeBtn.addEventListener('mousedown', holdToDoSomeFunction.bind(globalThis, multiplyByAHalfFunc, 'mouseup'));
-decreaseEvilSizeBtn.addEventListener('touchstart', holdToDoSomeFunction.bind(globalThis, multiplyByAHalfFunc, 'touchend'));
+decreaseEvilSizeBtn.addEventListener('touchstart', holdToDoSomeFunction.bind(globalThis, multiplyByAHalfFunc, 'touchend'), { passive: true});
 
 // event handler for mouse holding events
 function holdToDoSomeFunction (someFunction, timeToStop) {
