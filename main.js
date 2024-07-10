@@ -612,6 +612,37 @@ function directionsToGoForEvilUsingMouse (mouseEvent) {
   }
 
   const lengthOfHypotenuseFromEvilCenter = Math.sqrt(differenceX ** 2 + differenceY ** 2);
+
+  // if the pointer is too close to the circle, yet still outside it, then 
+  // (rather, when the circle will collide into the pointer if it moves by inital velocity)
+  // instead of colliding into it (covering the pointer) just touch the pointer 
+  // (by taking the distance between the pointer and the circle in one go (which is slower than the inital velocity))
+  // otherwise circle will be moving too fast and will cover the pointer instead of just touching it
+  let lengthOfHypOfDistanceTriangle = lengthOfHypotenuseFromEvilCenter - evil.size;
+  if (lengthOfHypOfDistanceTriangle > 0 && lengthOfHypOfDistanceTriangle <= evil.initialVel) {
+    // calculate the dif and if dif is bigger than vel, use vel otherwise use dif, enabling smoother touching 
+    // this shouldn't be calculated when inside the circle, because dif will be negative
+    // and negative is a direction, vel shoulnd't have a direction
+  
+    // the difference between the radius and the hypotenuse from the center to the pointer
+    // can be used to calculate the distance needed to travel 
+    // because it is actually the hypotenuse of a similar triangle
+    // refer to: src="./visualization-of-distance-needed.png">
+  
+    // (length of the hypotenuse of the smaller triangle) divided by (bigger hypotenuse)
+    // gives the ratio of similarity which can be used to obtain the legs (which are X and Y distances until touch)
+
+    // if it's too small (might happen when pointer is too close due to floating point arithmetic) use something bigger
+    // because JS cannot subtract too small numbers from big numbers (1e9 - 1e-9 === 1e9), which causes vertical and horizontal stop
+    if (lengthOfHypOfDistanceTriangle < 1e-3) lengthOfHypOfDistanceTriangle = 1e-3;
+    const ratioOfSimilarity = lengthOfHypOfDistanceTriangle / lengthOfHypotenuseFromEvilCenter;
+    const distanceNeededX = differenceX * ratioOfSimilarity;
+    const distanceNeededY = differenceY * ratioOfSimilarity;
+    if (distanceNeededX > evil.initialVel || distanceNeededY > evil.initialVel) debugger;
+    evil.velY = distanceNeededY;
+    evil.velX = distanceNeededX;
+  }
+  
   // if outside boundaries, it's already dealt with
   if (withinHorizontalBoundaries) {
     if (withinVerticalBoundaries) {
