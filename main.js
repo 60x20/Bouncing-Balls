@@ -316,6 +316,8 @@ class EvilCircle extends Shape {
     this.directionLeft = this.directionsForEvil.arrowleft || this.directionsForEvil.a;
     this.directionDown = this.directionsForEvil.arrowdown || this.directionsForEvil.s;
     this.directionUp = this.directionsForEvil.arrowup || this.directionsForEvil.w;
+    // inital velocity is saved because mousedown events change it and mouseup events revert back to it
+    this.initialVel = velX;
     this.drawEvil();
   }
 
