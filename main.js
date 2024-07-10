@@ -353,6 +353,21 @@ class EvilCircle extends Shape {
     */
   }
 
+  // slope === difY / difX
+  initializeVelXAndSetYFromSlope(slope) {
+    // difY === difX * slope
+    evil.velX = evil.initialVel;
+    evil.velY = evil.velX * slope;
+  }
+  initializeVelYAndSetXFromSlope(slope) {
+    // difX === difY / slope
+    evil.velY = evil.initialVel;
+    evil.velX = evil.velY / slope;
+  }
+  resetVel() {
+    this.velX = this.velY = this.initialVel;
+  }
+
   goLeft() {
     this.directionsForEvil.arrowleft = true;
     this.directionsForEvil.arrowright = false;
