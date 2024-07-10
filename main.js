@@ -70,10 +70,10 @@ decreaseEvilSizeBtn.addEventListener('mousedown', holdToDoSomeFunction.bind(glob
 decreaseEvilSizeBtn.addEventListener('touchstart', holdToDoSomeFunction.bind(globalThis, multiplyByAHalfFunc, 'touchend'), { passive: true});
 
 // event handler for mouse holding events
-function holdToDoSomeFunction (someFunction, timeToStop) {
+function holdToDoSomeFunction (someFunction, endEvent) {
   const intervalID = setInterval(someFunction, 200);
-  // timeToStop is an event name like 'mouseup' and 'touchend'
-  document.addEventListener(timeToStop, clearInterval.bind(globalThis, intervalID), { once: true });
+  // endEvent is an event name like 'mouseup' and 'touchend'
+  document.addEventListener(endEvent, clearInterval.bind(globalThis, intervalID), { once: true });
 }
 
 const toggleCollisionDetectionBtn = document.getElementById('toggle-collision-detection');
