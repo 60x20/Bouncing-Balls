@@ -575,6 +575,24 @@ function directionsToGoForEvilUsingMouse (mouseEvent) {
   // difference will be used to calculate hypotenuse and slope
   const differenceX = Math.abs(mouseEvent.pageX - evil.x);
   const differenceY = Math.abs(mouseEvent.pageY - evil.y);
+
+  // for more smoother moving, move along the hypotenuse, instead of moving 1/1 diagonally (which is not smooth)
+  // calculate slope, then change velocity according to it
+  // as a result evil will be moving along the hypotenuse
+  // if difference is 0, withinBoundaries will be set to true, hence it will stop
+  // don't do anything if either is zero, otherwise extreme cases would occur: (1 / 0), (0 / 0)
+  if (differenceX && differenceY) {
+    // set the biggest to inital vel, the other according to the slope
+    const slope = Math.abs(differenceY / differenceX);
+    if (differenceY > differenceX) {
+      // if Y is bigger than X, Y should be the inital, and X should be lower than the inital
+      // otherwise (X is inital, Y is bigger than inital) evil will be moving so fast
+      evil.initializeVelYAndSetXFromSlope(slope);
+    } else {
+      evil.initializeVelXAndSetYFromSlope(slope);
+    }
+  }
+
   // horizontal
   if (mouseEvent.pageX > evil.x + evil.size) {
     evil.goRight();
