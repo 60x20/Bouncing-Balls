@@ -572,6 +572,9 @@ function directionsToGoForEvilUsingMouse (mouseEvent) {
   let withinHorizontalBoundaries = false;
   let withinVerticalBoundaries = false;
 
+  // difference will be used to calculate hypotenuse and slope
+  const differenceX = Math.abs(mouseEvent.pageX - evil.x);
+  const differenceY = Math.abs(mouseEvent.pageY - evil.y);
   // horizontal
   if (mouseEvent.pageX > evil.x + evil.size) {
     evil.goRight();
@@ -590,6 +593,7 @@ function directionsToGoForEvilUsingMouse (mouseEvent) {
     withinVerticalBoundaries = true;
   }
 
+  const lengthOfHypotenuseFromEvilCenter = Math.sqrt(differenceX ** 2 + differenceY ** 2);
   // if outside boundaries, it's already dealt with
   if (withinHorizontalBoundaries) {
     if (withinVerticalBoundaries) {
@@ -605,12 +609,9 @@ function directionsToGoForEvilUsingMouse (mouseEvent) {
   }
 
   function approachMouseIfOutsideCircle() {
-    const differenceX = mouseEvent.pageX - evil.x;
-    const differenceY = mouseEvent.pageY - evil.y;
-    const lengthOfHypotenuse = Math.sqrt(differenceX ** 2 + differenceY ** 2);
     // if the hypotenuse is bigger than the radius, it's outside the circle, otherwise inside it
     // case: outside the circle
-    if (lengthOfHypotenuse > evil.size) {
+    if (lengthOfHypotenuseFromEvilCenter > evil.size) {
       // Since we are within the boundaries, if mouseEvent.pageY === evil.y, this means we're on the X axis
       // There is no point on the X axis that radius does not reach
       // So it is not a possible case
