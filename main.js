@@ -667,6 +667,8 @@ document.addEventListener('mousedown', (e) => {
         requestAnimationFrame(() => {
           document.removeEventListener('mousemove', setCurrentCoordinates);
           resetDirections();
+          // reset evil vel, so that moving with keyboard is not affected
+          evil.resetVel();
           cancelAnimationFrame(animationRequestID);
         });
       });
@@ -699,6 +701,8 @@ document.addEventListener('touchstart', (e) => {
         requestAnimationFrame(() => {
           document.removeEventListener('touchmove', setCurrentCoordinates);
           resetDirections();
+          // reset evil vel, so that moving with keyboard is not affected
+          evil.resetVel();
           cancelAnimationFrame(animationRequestID);
         });
       });
