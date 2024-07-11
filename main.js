@@ -568,7 +568,7 @@ function directionsToGoForEvilUsingMouse (mouseEvent) {
   // because they include scrolling and also are compatible with mobile devices
   // it gives the offset of canvas because canvas starts at (0, 0)
 
-  // Whether mouse is inside the X and Y axes of evilCircle
+  // Whether mouse is inside the X and Y axes of evilCircle, will be used to determine movement
   let withinHorizontalBoundaries = false;
   let withinVerticalBoundaries = false;
 
@@ -577,23 +577,45 @@ function directionsToGoForEvilUsingMouse (mouseEvent) {
   const differenceY = Math.abs(mouseEvent.pageY - evil.y);
 
   // for more smoother moving, move along the hypotenuse, instead of moving 1/1 diagonally (which is not smooth)
-  // calculate slope, then change velocity according to it
-  // as a result evil will be moving along the hypotenuse
-  // if difference is 0, withinBoundaries will be set to true, hence it will stop
+  // calculate slope, then change velocity according to it as a result evil will be moving along the hypotenuse
   // don't do anything if either is zero, otherwise extreme cases would occur: (1 / 0), (0 / 0)
   if (differenceX && differenceY) {
     // set the biggest to inital vel, the other according to the slope
+    // otherwise (smallest is inital, biggest bigger than initial) evil will be moving too fast
     const slope = Math.abs(differenceY / differenceX);
     if (differenceY > differenceX) {
-      // if Y is bigger than X, Y should be the inital, and X should be lower than the inital
-      // otherwise (X is inital, Y is bigger than inital) evil will be moving so fast
       evil.initializeVelYAndSetXFromSlope(slope);
     } else {
       evil.initializeVelXAndSetYFromSlope(slope);
     }
   }
 
-  // horizontal
+  const lengthOfHypotenuseFromEvilCenter = Math.sqrt(differenceX ** 2 + differenceY ** 2);
+
+  // if the pointer is too close to the circle, then instead of covering it just touch it
+  // (by taking the distance between the pointer and the circle in one go (which is slower than the inital velocity))
+  // otherwise circle will be moving too fast (which is not smooth)
+  let distanceBetweenPointerAndEvilCenter = lengthOfHypotenuseFromEvilCenter - evil.size;
+  if (distanceBetweenPointerAndEvilCenter > 0 && distanceBetweenPointerAndEvilCenter <= evil.initialVel) {
+    // this shouldn't be calculated when inside the circle, because distance will be negative (vel shoulnd't have a direction)
+  
+    // this distance is actually the hypotenuse of a similar triangle, whose legs are 
+    // the horizontal and vertical distances until touch
+    // refer to: src="./visualization-of-distance-needed.png">
+    
+    // if it's too small (might happen when pointer is too close, due to floating point arithmetic) use something bigger
+    // because JS cannot subtract too small numbers from big numbers (1e9 - 1e-9 === 1e9), which causes vertical and horizontal stop
+    if (distanceBetweenPointerAndEvilCenter < 1e-3) distanceBetweenPointerAndEvilCenter = 1e-3;
+    
+    // ratio of similarity can be used to obtain the legs
+    const ratioOfSimilarity = distanceBetweenPointerAndEvilCenter / lengthOfHypotenuseFromEvilCenter;
+    const distanceNeededX = differenceX * ratioOfSimilarity;
+    const distanceNeededY = differenceY * ratioOfSimilarity;
+    evil.velY = distanceNeededY;
+    evil.velX = distanceNeededX;
+  }
+
+  // horizontal movement
   if (mouseEvent.pageX > evil.x + evil.size) {
     evil.goRight();
   } else if (mouseEvent.pageX < evil.x - evil.size) {
@@ -602,7 +624,7 @@ function directionsToGoForEvilUsingMouse (mouseEvent) {
     withinHorizontalBoundaries = true;
   }
 
-  // vertical
+  // vertical movement
   if (mouseEvent.pageY > evil.y + evil.size) {
     evil.goDown();
   } else if (mouseEvent.pageY < evil.y - evil.size) {
@@ -611,37 +633,6 @@ function directionsToGoForEvilUsingMouse (mouseEvent) {
     withinVerticalBoundaries = true;
   }
 
-  const lengthOfHypotenuseFromEvilCenter = Math.sqrt(differenceX ** 2 + differenceY ** 2);
-
-  // if the pointer is too close to the circle, yet still outside it, then 
-  // (rather, when the circle will collide into the pointer if it moves by inital velocity)
-  // instead of colliding into it (covering the pointer) just touch the pointer 
-  // (by taking the distance between the pointer and the circle in one go (which is slower than the inital velocity))
-  // otherwise circle will be moving too fast and will cover the pointer instead of just touching it
-  let lengthOfHypOfDistanceTriangle = lengthOfHypotenuseFromEvilCenter - evil.size;
-  if (lengthOfHypOfDistanceTriangle > 0 && lengthOfHypOfDistanceTriangle <= evil.initialVel) {
-    // calculate the dif and if dif is bigger than vel, use vel otherwise use dif, enabling smoother touching 
-    // this shouldn't be calculated when inside the circle, because dif will be negative
-    // and negative is a direction, vel shoulnd't have a direction
-  
-    // the difference between the radius and the hypotenuse from the center to the pointer
-    // can be used to calculate the distance needed to travel 
-    // because it is actually the hypotenuse of a similar triangle
-    // refer to: src="./visualization-of-distance-needed.png">
-  
-    // (length of the hypotenuse of the smaller triangle) divided by (bigger hypotenuse)
-    // gives the ratio of similarity which can be used to obtain the legs (which are X and Y distances until touch)
-
-    // if it's too small (might happen when pointer is too close due to floating point arithmetic) use something bigger
-    // because JS cannot subtract too small numbers from big numbers (1e9 - 1e-9 === 1e9), which causes vertical and horizontal stop
-    if (lengthOfHypOfDistanceTriangle < 1e-3) lengthOfHypOfDistanceTriangle = 1e-3;
-    const ratioOfSimilarity = lengthOfHypOfDistanceTriangle / lengthOfHypotenuseFromEvilCenter;
-    const distanceNeededX = differenceX * ratioOfSimilarity;
-    const distanceNeededY = differenceY * ratioOfSimilarity;
-    evil.velY = distanceNeededY;
-    evil.velX = distanceNeededX;
-  }
-  
   // if outside boundaries, it's already dealt with
   if (withinHorizontalBoundaries) {
     if (withinVerticalBoundaries) {
@@ -658,24 +649,10 @@ function directionsToGoForEvilUsingMouse (mouseEvent) {
 
   function approachMouseIfOutsideCircle() {
     // if the hypotenuse is bigger than the radius, it's outside the circle, otherwise inside it
-    // case: outside the circle
     if (lengthOfHypotenuseFromEvilCenter > evil.size) {
-      // Since we are within the boundaries, if mouseEvent.pageY === evil.y, this means we're on the X axis
-      // There is no point on the X axis that radius does not reach
-      // So it is not a possible case
-      const downTheCenter = mouseEvent.pageY > evil.y;
-      const leftOfTheCenter = mouseEvent.pageX < evil.x;
-      if (leftOfTheCenter) {
-        evil.goLeft()
-      } else {
-        evil.goRight()
-      }
-
-      if (downTheCenter) {
-        evil.goDown()
-      } else {
-        evil.goUp();
-      }
+      // case: outside the circle
+      mouseEvent.pageY > evil.y ? evil.goDown(): evil.goUp();
+      mouseEvent.pageX > evil.x ? evil.goRight(): evil.goLeft();
     } else {
       // case: inside the circle, don't move
       evil.stopHorizontally();
