@@ -682,21 +682,8 @@ document.addEventListener('mousedown', (e) => {
   // if event originates from the instruments wrapper, then ignore it (bubbling)
   if (!instrumentsWrapper.contains(e.target)) {
     const currentCoordinates = {pageX: e.pageX, pageY: e.pageY};
-    const setCurrentCoordinates = setCoordinates.bind(globalThis, currentCoordinates);
-    document.addEventListener('mousemove', setCurrentCoordinates);
-    const changeDirectionsFunc = directionsToGoForEvilUsingMouse.bind(globalThis, currentCoordinates);
-    // obj is used instead of primitive because we want to pass it by reference since value is dynamic
-    const animationRequestIDRefObj = {
-      animationRequestID: requestAnimationFrame(recursivelyChangeDirectionsFunc)
-    };
-    
-    // interval version of requestAnimationFrame
-    function recursivelyChangeDirectionsFunc () {
-      changeDirectionsFunc();
-      animationRequestIDRefObj.animationRequestID = requestAnimationFrame(recursivelyChangeDirectionsFunc);
-    }
-
-    addListenerToEndChangingDirectionsWithMouse('mouseup', 'mousemove', animationRequestIDRefObj, setCurrentCoordinates);
+    const setCurrentCoordinatesHandler = setCoordinates.bind(globalThis, currentCoordinates);
+    startChangingCoordinatesWithMovement('mouseup', 'mousemove' , currentCoordinates, setCurrentCoordinatesHandler);
   }
 });
 // set directions touching the screen
@@ -705,33 +692,37 @@ document.addEventListener('touchstart', (e) => {
   if (!instrumentsWrapper.contains(e.target)) {
     const touch = e.touches[0];
     const currentCoordinates = {pageX: touch.pageX, pageY: touch.pageY};
-    const setCurrentCoordinates = setCoordinates.bind(globalThis, currentCoordinates);
-    document.addEventListener('touchmove', (e) => {
-      setCurrentCoordinates(e.touches[0]);
-    });
-    const changeDirectionsFunc = directionsToGoForEvilUsingMouse.bind(globalThis, currentCoordinates);
-    // obj is used instead of primitive because we want to pass it by reference since value is dynamic
-    const animationRequestIDRefObj = {
-      animationRequestID: requestAnimationFrame(recursivelyChangeDirectionsFunc)
-    };
-
-    // interval version of requestAnimationFrame
-    function recursivelyChangeDirectionsFunc () {
-      changeDirectionsFunc();
-      animationRequestIDRefObj.animationRequestID = requestAnimationFrame(recursivelyChangeDirectionsFunc);
-    }
-
-    addListenerToEndChangingDirectionsWithMouse('touchend', 'touchmove', animationRequestIDRefObj, setCurrentCoordinates);
+    const setCurrentCoordinatesHandler = setCoordinates.bind(globalThis, currentCoordinates);
+    // since touch event stores pointer coordinates in its touches array, we can't directly use it
+    startChangingCoordinatesWithMovement('touchend', 'touchmove', currentCoordinates, e => setCurrentCoordinatesHandler(e.touches[0]));
   }
 });
-function addListenerToEndChangingDirectionsWithMouse(endEvent, moveEvent, animationRequestIDRefObj, setCurrentCoordinates) {
-  // endEvent is either 'mouseup' or 'tocuhend'
-  // moveEvent is either 'mousemove' or 'tocuhmove'
+function startChangingCoordinatesWithMovement(endEvent, moveEvent, currentCoordinates, setCurrentCoordinatesHandler) {
+  // endEvent is either 'mouseup' or 'touchend'
+  // moveEvent is either 'mousemove' or 'touchmove'
+  document.addEventListener(moveEvent, setCurrentCoordinatesHandler);
+  const changeDirectionsFunc = directionsToGoForEvilUsingMouse.bind(globalThis, currentCoordinates);
+  // obj is used instead of primitive because we want to pass it by reference since value is dynamic
+  const animationRequestIDRefObj = {
+    animationRequestID: requestAnimationFrame(recursivelyChangeDirectionsFunc)
+  };
+  
+  // interval version of requestAnimationFrame
+  function recursivelyChangeDirectionsFunc () {
+    changeDirectionsFunc();
+    animationRequestIDRefObj.animationRequestID = requestAnimationFrame(recursivelyChangeDirectionsFunc);
+  }
+
+  addListenerToEndChangingDirectionsWithMouse(endEvent, moveEvent, animationRequestIDRefObj, setCurrentCoordinatesHandler);
+}
+function addListenerToEndChangingDirectionsWithMouse(endEvent, moveEvent, animationRequestIDRefObj, setCurrentCoordinatesHandler) {
+  // endEvent is either 'mouseup' or 'touchend'
+  // moveEvent is either 'mousemove' or 'touchmove'
   document.addEventListener(endEvent, (e) => {
     // timeout is to make clicks have an effect
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
-        document.removeEventListener(moveEvent, setCurrentCoordinates);
+        document.removeEventListener(moveEvent, setCurrentCoordinatesHandler);
         resetDirections();
         // reset evil vel, so that moving with keyboard is not affected
         evil.resetVel();
