@@ -685,29 +685,20 @@ document.addEventListener('mousedown', (e) => {
     const setCurrentCoordinates = setCoordinates.bind(globalThis, currentCoordinates);
     document.addEventListener('mousemove', setCurrentCoordinates);
     const changeDirectionsFunc = directionsToGoForEvilUsingMouse.bind(globalThis, currentCoordinates);
-    let animationRequestID = requestAnimationFrame(recursivelyChangeDirectionsFunc);
+    // obj is used instead of primitive because we want to pass it by reference since value is dynamic
+    const animationRequestIDRefObj = {
+      animationRequestID: requestAnimationFrame(recursivelyChangeDirectionsFunc)
+    };
     
     // interval version of requestAnimationFrame
     function recursivelyChangeDirectionsFunc () {
       changeDirectionsFunc();
-      animationRequestID = requestAnimationFrame(recursivelyChangeDirectionsFunc);
+      animationRequestIDRefObj.animationRequestID = requestAnimationFrame(recursivelyChangeDirectionsFunc);
     }
 
-    document.addEventListener('mouseup', (e) => {
-      // timeout is to make clicks have an effect
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          document.removeEventListener('mousemove', setCurrentCoordinates);
-          resetDirections();
-          // reset evil vel, so that moving with keyboard is not affected
-          evil.resetVel();
-          cancelAnimationFrame(animationRequestID);
-        });
-      });
-    }, { once: true });
+    addListenerToEndChangingDirectionsWithMouse('mouseup', 'mousemove', animationRequestIDRefObj, setCurrentCoordinates);
   }
 });
-
 // set directions touching the screen
 document.addEventListener('touchstart', (e) => {
   // if event originates from the instruments wrapper, then ignore it (bubbling)
@@ -719,28 +710,36 @@ document.addEventListener('touchstart', (e) => {
       setCurrentCoordinates(e.touches[0]);
     });
     const changeDirectionsFunc = directionsToGoForEvilUsingMouse.bind(globalThis, currentCoordinates);
-    let animationRequestID = requestAnimationFrame(recursivelyChangeDirectionsFunc);
+    // obj is used instead of primitive because we want to pass it by reference since value is dynamic
+    const animationRequestIDRefObj = {
+      animationRequestID: requestAnimationFrame(recursivelyChangeDirectionsFunc)
+    };
 
     // interval version of requestAnimationFrame
     function recursivelyChangeDirectionsFunc () {
       changeDirectionsFunc();
-      animationRequestID = requestAnimationFrame(recursivelyChangeDirectionsFunc);
+      animationRequestIDRefObj.animationRequestID = requestAnimationFrame(recursivelyChangeDirectionsFunc);
     }
 
-    document.addEventListener('touchend', () => {
-      // timeout is to make clicks have an effect
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          document.removeEventListener('touchmove', setCurrentCoordinates);
-          resetDirections();
-          // reset evil vel, so that moving with keyboard is not affected
-          evil.resetVel();
-          cancelAnimationFrame(animationRequestID);
-        });
-      });
-    }, { once: true });
+    addListenerToEndChangingDirectionsWithMouse('touchend', 'touchmove', animationRequestIDRefObj, setCurrentCoordinates);
   }
 });
+function addListenerToEndChangingDirectionsWithMouse(endEvent, moveEvent, animationRequestIDRefObj, setCurrentCoordinates) {
+  // endEvent is either 'mouseup' or 'tocuhend'
+  // moveEvent is either 'mousemove' or 'tocuhmove'
+  document.addEventListener(endEvent, (e) => {
+    // timeout is to make clicks have an effect
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        document.removeEventListener(moveEvent, setCurrentCoordinates);
+        resetDirections();
+        // reset evil vel, so that moving with keyboard is not affected
+        evil.resetVel();
+        cancelAnimationFrame(animationRequestIDRefObj.animationRequestID);
+      });
+    });
+  }, { once: true });
+}
 
 window.addEventListener('blur', resetDirections);
 
