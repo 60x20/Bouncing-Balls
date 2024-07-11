@@ -333,6 +333,12 @@ class EvilCircle extends Shape {
     ctx.arc(this.x, this.y, this.size, 0, 2 * Math.PI);
     ctx.stroke();
     /*
+    // visualizations for debugging:
+    // outer circle (representing initalVel movement)
+    ctx.beginPath();
+    ctx.strokeStyle = 'white';
+    ctx.arc(this.x, this.y, this.size + this.initialVel, 0, 2 * Math.PI);
+    ctx.stroke();
     // outer rectangle
     ctx.beginPath();
     ctx.strokeStyle = 'white';
