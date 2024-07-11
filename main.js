@@ -638,7 +638,6 @@ function directionsToGoForEvilUsingMouse (mouseEvent) {
     const ratioOfSimilarity = lengthOfHypOfDistanceTriangle / lengthOfHypotenuseFromEvilCenter;
     const distanceNeededX = differenceX * ratioOfSimilarity;
     const distanceNeededY = differenceY * ratioOfSimilarity;
-    if (distanceNeededX > evil.initialVel || distanceNeededY > evil.initialVel) debugger;
     evil.velY = distanceNeededY;
     evil.velX = distanceNeededX;
   }
