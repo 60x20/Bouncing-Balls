@@ -2,7 +2,7 @@
 
 // setup canvas and elements
 const canvas = document.querySelector('canvas');
-const ctx = canvas.getContext("2d", { willReadFrequently: true });
+const ctx = canvas.getContext('2d');
 
 // The size of body is preferred over that of window because it does not round the size
 // Rounding the size up, and giving this size to the canvas will result in scrollbars
