@@ -760,7 +760,7 @@ function blackenThenDrawThenSchedule() {
   balls = balls.filter(detectCollisionWithEvilCircle);
 
   const end = performance.now();
-  timeElapsed+= (end - start) || 1;
+  timeElapsed += (end - start) || 1;
   if (++totalFrame === 20) {
     // time elapsed is in ms, converted to seconds
     fpsElement.innerText = parseInt(totalFrame / timeElapsed * 1000);
